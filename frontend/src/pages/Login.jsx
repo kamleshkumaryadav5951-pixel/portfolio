@@ -31,7 +31,7 @@ export const Login = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await axios.post('${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/auth/google', {
+        const res = await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/auth/google`, {
           token: tokenResponse.access_token,
         });
         localStorage.setItem('token', res.data.token);
@@ -60,7 +60,7 @@ export const Login = () => {
     setSuccessMsg(null);
     try {
       if (isLogin) {
-        const res = await axios.post('${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/auth/login', { email: formData.email, password: formData.password });
+        const res = await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/auth/login`, { email: formData.email, password: formData.password });
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('user', JSON.stringify({
           _id: res.data._id,
@@ -72,7 +72,7 @@ export const Login = () => {
       } else {
         if (!showOtpForm) {
           // Send OTP Step
-          const res = await axios.post('${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/auth/send-otp', {
+          const res = await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/auth/send-otp`, {
             email: formData.email,
             phone: formData.phone
           });
@@ -80,7 +80,7 @@ export const Login = () => {
           setShowOtpForm(true);
         } else {
           // Verify OTP and Register Step
-          const res = await axios.post('${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/auth/register', formData);
+          const res = await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/auth/register`, formData);
           localStorage.setItem('token', res.data.token);
           localStorage.setItem('user', JSON.stringify({
             _id: res.data._id,

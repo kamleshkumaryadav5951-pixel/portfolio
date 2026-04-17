@@ -6,6 +6,44 @@ import { upload } from '../config/cloudinaryConfig.js';
 const router = express.Router();
 
 // Get all notes (Public, but URLs of paid notes are hidden unless purchased)
+router.get('/temp-seed', async (req, res) => {
+  try {
+    const dummyNotes = [
+      { 
+        title: 'Mastering Dynamic Programming', 
+        description: 'Advanced DP concepts including recursion and memoization.', 
+        category: 'Algorithms', 
+        isFree: false, 
+        price: 99, 
+        url: 'https://example.com/dp-note', 
+        tags: ['dp', 'recursion'] 
+      },
+      { 
+        title: 'Graph Algorithms Cheatsheet', 
+        description: 'Comprehensive guide to BFS, DFS, Dijkstra and more.', 
+        category: 'Algorithms', 
+        isFree: true, 
+        url: 'https://example.com/graphs-note', 
+        tags: ['graphs', 'bfs'] 
+      },
+      { 
+        title: 'System Design 101', 
+        description: 'Core concepts like Scalability, Load Balancing, and Caching.', 
+        category: 'System Design', 
+        isFree: false, 
+        price: 149, 
+        url: 'https://example.com/sys-design', 
+        tags: ['scalability', 'architecture'] 
+      }
+    ];
+    await Note.deleteMany({});
+    await Note.insertMany(dummyNotes);
+    res.json({ message: 'Database seeded successfully with 3 notes!' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 router.get('/', async (req, res) => {
   try {
     const filter = {};
@@ -16,7 +54,7 @@ router.get('/', async (req, res) => {
     // Sanitize notes: only show URL if note is free
     const sanitizedNotes = notes.map(note => {
       const n = note.toObject();
-      if (n.isFree) {
+      if (n.isFree === true) {
         return n;
       }
       delete n.url;
@@ -36,7 +74,7 @@ router.get('/:id', protect, async (req, res) => {
     if (!note) return res.status(404).json({ message: 'Note not found' });
     
     // Check access
-    const isPurchased = req.user.purchasedNotes.includes(note._id);
+    const isPurchased = req.user.purchasedNotes.some(id => id.toString() === note._id.toString());
     if (note.isFree || isPurchased || req.user.role === 'admin') {
       res.json(note);
     } else {

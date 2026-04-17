@@ -16,7 +16,7 @@ export const NotesPlatform = () => {
     document.body.appendChild(script);
 
     // Fetch notes from custom running backend
-    axios.get('${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/notes')
+    axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/notes`)
       .then(res => {
         setNotes(res.data);
         setFilteredNotes(res.data);
@@ -38,9 +38,9 @@ export const NotesPlatform = () => {
       // 1. Create order on backend (dummy user ID bypassed for test simplicity, usually requires JWT auth header here)
       // Because we haven't built the Login UI fully to store a JWT yet, we will mock the auth token header if API needs it.
       // But let's assume we pass a pseudo-call for demonstration:
-      const { data: order } = await axios.post('${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/payments/create-order', 
+      const { data: order } = await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/payments/create-order`, 
         { noteId: note._id },
-        { headers: { Authorization: "Bearer MOCK_TOKEN" } } // This will 401 fail due to auth middleware if no valid token
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } } // This will 401 fail due to auth middleware if no valid token
       ).catch(err => {
          alert("Please login first! (backend /api/payments requires valid JWT but Login UI is pending)");
          throw err;
@@ -57,7 +57,7 @@ export const NotesPlatform = () => {
         handler: async function (response) {
           // 3. Verify Payment
           try {
-            await axios.post('${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/payments/verify-payment', {
+            await axios.post(`${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/payments/verify-payment`, {
                 razorpayOrderId: response.razorpay_order_id,
                 razorpayPaymentId: response.razorpay_payment_id,
                 razorpaySignature: response.razorpay_signature
@@ -116,7 +116,7 @@ export const NotesPlatform = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
         {filteredNotes.map((note, index) => (
           <motion.div 
-            key={note.id}
+            key={note._id}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.05 }}
@@ -135,7 +135,7 @@ export const NotesPlatform = () => {
               </div>
               <h3 className="font-bold text-xl mb-2 group-hover:text-primary transition-colors">{note.title}</h3>
               <div className="flex gap-2 flex-wrap mb-4">
-                {note.tags.map(tag => (
+                {note.tags && note.tags.map(tag => (
                   <span key={tag} className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-md">#{tag}</span>
                 ))}
               </div>
